@@ -1,0 +1,17 @@
+services:
+  market-maker:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Flip to "--live" only after a forward test. Keeping it here rather than
+      # in the Dockerfile means going live is a compose edit, never a rebuild.
+      MM_ARGS: ""
+    command: sh -c "python -m strategies.mm_bitget.strategy $$MM_ARGS"
+    ports:
+      - "127.0.0.1:8080:8080"   # localhost only; expose it through a proxy if you want it remote
+    volumes:
+      - ./logs:/app/logs
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Momentum Transversal · Bitget</title>
+<style>
+  :root{
+    --bg:#0c0e12; --panel:#14171d; --line:#232832; --ink:#e8eaed;
+    --dim:#8b93a1; --long:#2ecc8f; --short:#ff5c6c; --accent:#5b8def;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding-block:28px;padding-left:18px;padding-right:18px}
+  h1{font-size:19px;margin:0;letter-spacing:-.2px}
+  .sub{color:var(--dim);font-size:13px;margin-top:3px}
+  header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;
+    justify-content:space-between;margin-bottom:22px}
+  .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;
+    font-weight:600;letter-spacing:.4px;text-transform:uppercase}
+  .paper{background:#243b55;color:#8fc0ff}
+  .live{background:#4a2226;color:#ff9aa4}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:12px;margin-bottom:22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .card .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+  .card .v{font-size:22px;font-weight:600;margin-top:5px;font-variant-numeric:tabular-nums}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:16px;margin-bottom:18px}
+  section h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--dim);margin:0 0 12px}
+  .scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+    color:var(--dim);font-weight:600;padding:7px 10px;border-bottom:1px solid var(--line)}
+  td{padding:8px 10px;border-bottom:1px solid var(--line)}
+  tr:last-child td{border-bottom:none}
+  .num{text-align:right}
+  .long{color:var(--long)} .short{color:var(--short)} .flat{color:var(--dim)}
+  .tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;letter-spacing:.3px}
+  .tag.long{background:rgba(46,204,143,.14)}
+  .tag.short{background:rgba(255,92,108,.14)}
+  .tag.flat{background:rgba(139,147,161,.12)}
+  .bar{height:5px;border-radius:3px;background:var(--line);position:relative;
+    min-width:70px;overflow:hidden}
+  .bar i{position:absolute;top:0;bottom:0;left:50%;border-radius:3px}
+  .empty{color:var(--dim);font-size:13px;padding:6px 2px}
+  footer{color:var(--dim);font-size:12px;margin-top:26px;
+    border-top:1px solid var(--line);padding-top:14px}
+  code{background:#1b1f27;padding:1px 5px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Momentum transversal · Bitget</h1>
+      <div class="sub" id="sub">cargando…</div>
+    </div>
+    <div id="mode"></div>
+  </header>
+
+  <div class="cards" id="cards"></div>
+
+  <section>
+    <h2>Ranking del universo · retorno 7 días</h2>
+    <div class="scroll"><table id="rank"></table></div>
+  </section>
+
+  <section>
+    <h2>Posiciones abiertas</h2>
+    <div class="scroll"><table id="pos"></table></div>
+  </section>
+
+  <section>
+    <h2>Historial de rebalanceos</h2>
+    <div class="scroll"><table id="hist"></table></div>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const pct = v => (v*100).toFixed(2) + '%';
+const usd = v => '$' + Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const el  = (t,h) => { const e=document.createElement(t); if(h!==undefined) e.innerHTML=h; return e; };
+
+function renderRank(rows){
+  const t = document.getElementById('rank');
+  t.innerHTML = '';
+  if(!rows || !rows.length){ t.append(el('tr','<td class="empty">sin datos de ranking</td>')); return; }
+  const max = Math.max(...rows.map(r => Math.abs(r.ret))) || 1;
+  t.append(el('thead','<tr><th>Activo</th><th>Retorno 7d</th><th></th><th>Pata</th></tr>'));
+  const tb = el('tbody');
+  for(const r of rows){
+    const w = Math.abs(r.ret)/max*50, left = r.ret>=0 ? 50 : 50-w;
+    const col = r.ret>=0 ? 'var(--long)' : 'var(--short)';
+    tb.append(el('tr',
+      `<td><strong>${r.symbol.replace('USDT','')}</strong></td>
+       <td class="num ${r.ret>=0?'long':'short'}">${pct(r.ret)}</td>
+       <td><div class="bar"><i style="left:${left}%;width:${w}%;background:${col}"></i></div></td>
+       <td><span class="tag ${r.leg}">${ {long:'LARGO',short:'CORTO',flat:'—'}[r.leg] }</span></td>`));
+  }
+  t.append(tb);
+}
+
+function renderPos(rows){
+  const t = document.getElementById('pos'); t.innerHTML='';
+  if(!rows || !rows.length){ t.append(el('tr','<td class="empty">ninguna posición abierta</td>')); return; }
+  t.append(el('thead','<tr><th>Activo</th><th>Lado</th><th class="num">Nocional</th><th class="num">PnL</th></tr>'));
+  const tb = el('tbody');
+  for(const p of rows){
+    const isShort = String(p.side).toLowerCase().startsWith('short');
+    tb.append(el('tr',
+      `<td><strong>${p.symbol.replace('USDT','')}</strong></td>
+       <td><span class="tag ${isShort?'short':'long'}">${isShort?'CORTO':'LARGO'}</span></td>
+       <td class="num">${usd(p.value)}</td>
+       <td class="num ${p.pnl>=0?'long':'short'}">${p.pnl>=0?'+':''}${usd(p.pnl)}</td>`));
+  }
+  t.append(tb);
+}
+
+function renderHist(rows){
+  const t = document.getElementById('hist'); t.innerHTML='';
+  if(!rows || !rows.length){
+    t.append(el('tr','<td class="empty">todavía no hay rebalanceos registrados</td>')); return; }
+  t.append(el('thead','<tr><th>Fecha (UTC)</th><th>Modo</th><th>Largos</th><th>Cortos</th><th class="num">Órdenes</th><th class="num">Volumen</th><th>Nota</th></tr>'));
+  const tb = el('tbody');
+  for(const h of rows){
+    const s = x => (x||[]).map(y=>y.replace('USDT','')).join(' ');
+    tb.append(el('tr',
+      `<td>${h.ts.replace('T',' ').replace('+00:00','')}</td>
+       <td><span class="tag ${h.mode==='live'?'short':'flat'}">${h.mode==='live'?'REAL':'PAPEL'}</span></td>
+       <td class="long">${s(h.longs)||'—'}</td>
+       <td class="short">${s(h.shorts)||'—'}</td>
+       <td class="num">${(h.orders||[]).length}</td>
+       <td class="num">${h.volume_usd!=null?usd(h.volume_usd):'—'}</td>
+       <td class="flat">${h.skipped||''}</td>`));
+  }
+  t.append(tb);
+}
+
+function renderCards(d){
+  const hist = d.history || [];
+  const vol = hist.reduce((a,h)=>a+(h.volume_usd||0),0);
+  const c = document.getElementById('cards'); c.innerHTML='';
+  const items = [
+    ['Equity', d.equity!=null ? usd(d.equity) : '—'],
+    ['Rebalanceos', hist.length],
+    ['Volumen acumulado', usd(vol)],
+    ['Posiciones', (d.positions||[]).length],
+  ];
+  for(const [k,v] of items){
+    const card = el('div'); card.className='card';
+    card.innerHTML = `<div class="k">${k}</div><div class="v">${v}</div>`;
+    c.append(card);
+  }
+}
+
+async function load(){
+  try{
+    const r = await fetch('/api/status', {cache:'no-store'});
+    const d = await r.json();
+    document.getElementById('sub').textContent =
+      `lookback ${d.config.lookback_hours}h · rebalanceo ${d.config.hold_hours}h · K=${d.config.k} · ${d.config.universe} activos · ${d.config.leverage}x`;
+    const m = el('span'); m.className = 'badge ' + (d.mode==='live'?'live':'paper');
+    m.textContent = d.mode==='live' ? '⚠ operando real' : 'modo papel';
+    document.getElementById('mode').innerHTML=''; document.getElementById('mode').append(m);
+    renderCards(d); renderRank(d.ranking); renderPos(d.positions); renderHist(d.history);
+    const notes = [];
+    if(!d.storage) notes.push('Sin Upstash configurado — el historial no se guarda.');
+    if(d.account_error) notes.push('Cuenta: ' + d.account_error);
+    if(d.ranking_error) notes.push('Ranking: ' + d.ranking_error);
+    notes.push('Actualizado ' + d.generated.replace('T',' ').replace('+00:00',' UTC'));
+    document.getElementById('foot').innerHTML = notes.join(' · ');
+  }catch(e){
+    document.getElementById('sub').textContent = 'no se pudo cargar /api/status';
+    document.getElementById('foot').textContent = String(e);
+  }
+}
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>

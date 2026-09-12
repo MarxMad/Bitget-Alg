@@ -1,0 +1,12 @@
+{
+  "crons": [
+    { "path": "/api/rebalance", "schedule": "10 7 * * *" }
+  ],
+  "functions": {
+    "api/rebalance.py": { "maxDuration": 120 },
+    "api/status.py": { "maxDuration": 30 }
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/dashboard.html" }
+  ]
+}

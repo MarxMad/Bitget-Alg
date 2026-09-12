@@ -1,0 +1,18 @@
+# The image runs the live path only. Research data and the venv would bloat it
+# by hundreds of MB and slow every rebuild.
+.git/
+.venv/
+data/
+scripts/
+education/
+docs/
+deploy/
+strategies/market_maker/
+strategies/mean_reversion/
+strategies/trend_following/
+strategies/momentum_mtf/
+strategies/cross_sectional/
+api/
+*.csv
+*.log
+.env

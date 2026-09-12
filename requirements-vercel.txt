@@ -1,0 +1,4 @@
+# Only what the live path imports. The research stack (pandas, numpy, fastapi)
+# stays out of the serverless bundle — it is never executed there.
+requests==2.31.0
+cryptography==50.0.1

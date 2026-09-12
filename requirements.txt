@@ -1,0 +1,8 @@
+# Live trading path
+requests==2.31.0
+cryptography==50.0.1
+python-dotenv==1.0.0
+
+# Research and backtesting only — not installed in the Docker image
+pandas
+numpy

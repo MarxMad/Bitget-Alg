@@ -1,0 +1,27 @@
+# Secrets — never commit these
+.env
+.env.*
+*.pem
+*.key
+.bitget/
+
+# ...but the template carries no secrets and belongs in the repo
+!.env.example
+
+# Market data: large and regenerable with scripts/fetch_bitget_data.py
+data/
+*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Logs
+logs/
+*.log
+
+# macOS
+.DS_Store
