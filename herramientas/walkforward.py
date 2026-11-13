@@ -11,8 +11,8 @@ The grid is deliberately SMALL. scan_edges' significance check showed that
 picking best-of-50 per asset finds lucky configs on pure noise 13.6 times out of
 38. Fewer candidates means fewer lottery tickets.
 
-    .venv/bin/python scripts/walkforward.py --interval 1H
-    .venv/bin/python scripts/walkforward.py --interval 1H --shuffle   # null
+    .venv/bin/python herramientas/walkforward.py --interval 1H
+    .venv/bin/python herramientas/walkforward.py --interval 1H --shuffle   # null
 """
 import argparse
 import glob
@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from scripts.scan_edges import load, evaluate, ema_trend, donchian, zscore_revert, FEES
+from herramientas.scan_edges import load, evaluate, ema_trend, donchian, zscore_revert, FEES
 
 # Small, theory-motivated grid: one classic config per family per speed.
 GRID = [

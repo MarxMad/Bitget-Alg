@@ -1,27 +1,48 @@
-# Secrets — never commit these
+# Secrets
 .env
-.env.*
-*.pem
-*.key
-.bitget/
-
-# ...but the template carries no secrets and belongs in the repo
-!.env.example
-
-# Market data: large and regenerable with scripts/fetch_bitget_data.py
-data/
-*.csv
 
 # Python
 __pycache__/
 *.py[cod]
-.venv/
+*.pyo
+*.pyd
+.Python
 venv/
+env/
+.venv/
 *.egg-info/
+dist/
+build/
 
 # Logs
 logs/
 *.log
 
+# Data (raw klines / MT4 exports — large, regenerable)
+data/
+**/research/data/
+*.csv
+*.db
+*.sqlite3
+
 # macOS
 .DS_Store
+
+# ── Documentos internos (repo PÚBLICO) ───────────────────────────────────────
+# Propuestas, presupuestos, cotizaciones y planeación del taller. Nunca se suben.
+interno/
+**/*presupuesto*
+**/*Presupuesto*
+**/*cotizacion*
+**/*Cotizacion*
+**/*propuesta*
+**/*Propuesta*
+*.pdf
+
+# Llaves RSA, por si alguien las deja dentro del repo
+*.pem
+
+# Configuración local del editor / agentes
+.claude/
+.vscode/
+.idea/

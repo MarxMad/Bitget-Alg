@@ -3,12 +3,9 @@
 .git/
 .venv/
 data/
-scripts/
-education/
-docs/
+herramientas/
+guias/
 deploy/
-strategies/market_maker/
-strategies/mean_reversion/
 strategies/trend_following/
 strategies/momentum_mtf/
 strategies/cross_sectional/

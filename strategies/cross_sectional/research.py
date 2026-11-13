@@ -11,8 +11,8 @@ single-asset timing.
 Runs the null the same way — each asset's returns shuffled independently, which
 destroys cross-sectional structure while keeping every marginal distribution.
 
-    .venv/bin/python scripts/cross_sectional.py
-    .venv/bin/python scripts/cross_sectional.py --shuffle --seed 3
+    .venv/bin/python strategies/cross_sectional/research.py
+    .venv/bin/python strategies/cross_sectional/research.py --shuffle --seed 3
 """
 import argparse
 import glob
@@ -22,8 +22,8 @@ import sys
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from scripts.scan_edges import load, FEES
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from herramientas.scan_edges import load, FEES
 
 
 # Coins that were already liquid majors a year ago. Selecting the universe by

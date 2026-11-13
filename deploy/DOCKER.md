@@ -3,23 +3,15 @@
 ## Check what is blocking first
 
 ```bash
-.venv/bin/python scripts/preflight.py
+.venv/bin/python strategies/mm_bitget/preflight.py
 ```
 
 It asks the live account, rather than assuming. The trading-permission check
 actually places an order — priced far from the market and post_only, so it
 cannot fill — because that is the only way to know one would be accepted.
 
-Current state on this account:
-
-| | |
-|---|---|
-| Credentials, auth, public API | ✅ |
-| Balance | ❌ $0 — needs funding |
-| Trading permission | ❌ KYC pending, every order returns 40035 |
-| API key IP binding | ⚠️ unbound; Bitget may degrade it after 90 days |
-
-Paper mode runs fine through both blockers.
+Fix anything it flags (missing credentials, KYC, zero balance) before going live.
+Paper mode runs without any of that.
 
 ## Run it locally, in paper, right now
 
@@ -47,8 +39,8 @@ adduser --disabled-password --gecos "" bot
 usermod -aG docker bot
 su - bot
 
-git clone https://github.com/MarxMad/Bitunix-Bot.git
-cd Bitunix-Bot
+git clone https://github.com/MarxMad/Bitget-Alg.git Bitget-Algoritmo-API
+cd Bitget-Algoritmo-API
 ```
 
 Copy credentials from your Mac — never commit them, never paste a private key
@@ -56,7 +48,7 @@ into a chat:
 
 ```bash
 # from your Mac
-scp .env bot@<server-ip>:~/Bitunix-Bot/.env
+scp .env bot@<server-ip>:~/Bitget-Algoritmo-API/.env
 scp ~/.bitget/bitget_private_key.pem bot@<server-ip>:~/.bitget/
 ```
 

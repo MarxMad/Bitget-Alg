@@ -2,10 +2,17 @@
 Bitget Unified Trading Account (UTA / v3) REST API Client
 Base URL: https://api.bitget.com
 
-Uses RSA-SHA256 request signing. Mirrors the method names of BitunixClient so
+Signs requests with either of the two key types Bitget issues:
+  * HMAC-SHA256 — the default "system-generated" key (API key + secret). This
+    is what workshop attendees create.
+  * RSA-SHA256  — a self-generated key pair whose public half is uploaded.
+Demo (paper) trading uses a separate Demo API key plus the header
+`paptrading: 1` on every request; pass demo=True.
+
+Keeps a small, stable method surface so
 strategies can swap exchanges by changing only the client construction.
 
-Signature scheme (differs from Bitunix's double-SHA256):
+Signature scheme:
     prehash = timestamp + METHOD + requestPath(+query) + body
     sign    = base64( RSA-PKCS1v15-SHA256( private_key, prehash ) )
 
@@ -15,6 +22,8 @@ from every v2 private endpoint with code 40085.
 """
 
 import base64
+import hashlib
+import hmac
 import time
 import json
 import logging
@@ -65,11 +74,18 @@ class BitgetClient:
 
     def __init__(self, access_key: str = "", passphrase: str = "",
                  private_key: Optional[str] = None,
-                 timeout: int = 15, category: str = CATEGORY):
+                 timeout: int = 15, category: str = CATEGORY,
+                 secret_key: Optional[str] = None, demo: bool = False):
         self.access_key = access_key
         self.passphrase = passphrase
         # Public market endpoints need no credentials, so a key-less client is valid.
+        # A secret selects HMAC; a private key selects RSA. Never both, because
+        # silently preferring one would hide a misconfigured .env.
+        if secret_key and private_key:
+            raise ValueError("Pass secret_key (HMAC) or private_key (RSA), not both.")
+        self.secret_key = secret_key or None
         self.private_key = _load_private_key(private_key) if private_key else None
+        self.demo = demo
         self.category = category
         self.timeout = timeout
 
@@ -89,10 +105,15 @@ class BitgetClient:
     # ─── Signing ──────────────────────────────────────────────────────────────
 
     def _sign(self, timestamp: str, method: str, request_path: str, body: str = "") -> str:
-        """RSA-PKCS1v15-SHA256 over the prehash string, base64-encoded."""
-        if self.private_key is None:
-            raise RuntimeError("This call needs credentials: no private key loaded.")
+        """HMAC-SHA256 (secret) or RSA-PKCS1v15-SHA256 (private key) over the
+        prehash string, base64-encoded. Bitget uses the same prehash for both."""
         prehash = f"{timestamp}{method.upper()}{request_path}{body}"
+        if self.secret_key:
+            digest = hmac.new(self.secret_key.encode("utf-8"),
+                              prehash.encode("utf-8"), hashlib.sha256).digest()
+            return base64.b64encode(digest).decode("utf-8")
+        if self.private_key is None:
+            raise RuntimeError("This call needs credentials: no secret or private key loaded.")
         signature = self.private_key.sign(
             prehash.encode("utf-8"),
             padding.PKCS1v15(),
@@ -124,6 +145,10 @@ class BitgetClient:
             timestamp = str(int(time.time() * 1000))
             sign = self._sign(timestamp, method, request_path, body_str)
             headers = self._make_headers(timestamp, sign)
+        if self.demo:
+            # Routes the call to the demo (paper) environment. Sent on public
+            # calls too, so prices and contract specs match the demo market.
+            headers["paptrading"] = "1"
 
         url = BASE_URL + request_path
         try:
@@ -224,7 +249,7 @@ class BitgetClient:
                     client_id: Optional[str] = None,
                     pos_side: Optional[str] = None) -> dict:
         """
-        Place a single order. Signature kept compatible with BitunixClient.
+        Place a single order.
         side: BUY | SELL          order_type: LIMIT | MARKET
         pos_side: long | short    (hedge mode only; omit in one-way mode)
         """
@@ -278,5 +303,5 @@ class BitgetClient:
             body["posSide"] = pos_side.lower()
         return self._post("/api/v3/trade/close-positions", body)
 
-    # Kept for interface parity with BitunixClient.
+    # Kept for interface compatibility.
     flash_close_position = close_positions

@@ -66,5 +66,5 @@ refuses to trade below it rather than placing a partial book.
 about 1,341x equity of extra volume at net zero. Combined ≈ **1,585x equity per
 year** at breakeven, and the mix is a dial between profit and volume.
 
-Reproduce: `scripts/cross_sectional.py`, `scripts/walkforward.py`,
-`scripts/simulate_mm.py`.
+Reproduce: `strategies/cross_sectional/research.py`, `herramientas/walkforward.py`,
+`strategies/mm_bitget/replay_fixed_spread.py`.

@@ -6,12 +6,12 @@ The only question this answers: does any (asset, strategy, params) combination
 produce gross edge per trade LARGER than the fee it pays per trade — on data it
 was not fitted to?
 
-    .venv/bin/python scripts/scan_edges.py --interval 1h
-    .venv/bin/python scripts/scan_edges.py --interval 1h --fee maker
+    .venv/bin/python herramientas/scan_edges.py --interval 1h
+    .venv/bin/python herramientas/scan_edges.py --interval 1h --fee maker
 
 Discipline: params are ranked on TRAIN, reported on TEST. A config counts as
 robust only if it is positive on BOTH halves. Ranking on train alone is how you
-pick overfitted garbage — the previous Bitunix sweep showed configs going
+pick overfitted garbage — an earlier sweep showed configs going
 +144% train / -31% test.
 """
 import argparse

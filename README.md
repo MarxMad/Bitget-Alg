@@ -1,97 +1,71 @@
-# Bitget-Alg
+# Bitget-Algoritmo-API
 
-Two trading strategies for Bitget USDT-M perpetuals, plus the statistical
-tooling used to decide whether either was worth running.
+Bots de trading algorítmico para **Bitget** en Python: desde descargar datos y hacer un backtest honesto hasta desplegar un bot que opera solo.
 
-The tooling is the point. Most of what a backtest sweep finds is noise, and the
-scripts here exist to prove that before money is involved — on this universe
-they killed three strategy families and left one standing.
+Es el repo del **Taller de Trading Algorítmico de CriptoUNAM × Bitget**. Todo se practica en **modo demo** (fondos simulados): no necesitas depositar dinero.
 
-## What is here
+> ⚠️ Material educativo, no asesoría financiera. La mayoría de las estrategias de este repo **no tienen ventaja** después de comisiones, y el repo lo documenta. Ese es justo el aprendizaje.
 
-| | |
-|---|---|
-| `shared/bitget_client.py` | Bitget Unified (v3) REST client, RSA-SHA256 signing |
-| `strategies/mm_bitget/` | Market maker quoting at 2.5x realised volatility |
-| `strategies/cross_sectional/` | Cross-sectional momentum over 12 majors |
-| `scripts/` | Data download, edge sweeps, significance tests, preflight |
-| `api/`, `vercel.json` | Vercel cron + private dashboard for the momentum leg |
-| `Dockerfile` | Portable container for the market maker |
+---
 
-## How strategies were accepted or rejected
+## Empieza aquí
 
-Every candidate was scored against a **null**: the identical procedure rerun on
-shuffled returns, which have no signal by construction. A result that a coin
-flip matches is not an edge.
+| Paso | Guía | Cuándo |
+|---|---|---|
+| 0 | [Antes del taller](guias/00-antes-del-taller.md): cuenta, KYC, 2FA | **Una semana antes** |
+| 1 | [Instalación](guias/01-instalacion.md): Python, repo, dependencias | Antes del taller |
+| 2 | [Tu API key demo](guias/02-api-key-demo.md): crearla y probarla | Taller, min 10–30 |
+| 3 | [Datos y backtest](guias/03-datos-y-backtest.md) | Taller, min 30–70 |
+| 4 | [Catálogo de estrategias](guias/04-estrategias.md) | Taller y después |
+| 5 | [Despliegue](guias/05-despliegue.md): papel → demo → contenedor | Taller, min 80–115 |
+| 6 | [Seguridad, errores y FAQ](guias/06-seguridad-y-faq.md) | Cuando algo falle |
 
-**Rejected — classic technical analysis.** Trend-following, Donchian breakouts
-and z-score reversion across 33 assets produced 11 apparent winners. The same
-filter on shuffled data passes **13.6 on average**. Worse than chance. Walk-forward
-agreed (real 10, null range 4–12). Scanning harder makes this worse, not better:
-each extra candidate is another lottery ticket.
+Índice completo: [`guias/`](guias/README.md).
 
-**Accepted, weakly — cross-sectional momentum.** Long the 3 strongest of 12
-majors against the 3 weakest, rebalanced daily. Walk-forward Sharpe 1.56 and
-+42.9% out-of-sample against a null averaging **−0.73**, which 0 of 10 shuffled
-runs reached. The null's negative mean is the informative part: on noise you pay
-fees and earn nothing. p < 0.1 — evidence, not proof.
-
-**Accepted as breakeven — market making.** Across 10 symbols, the spread capture
-was +$218.05 on the training half and +$218.94 on the test half — stable to a
-dollar across non-overlapping periods. Adverse selection cancels it almost
-exactly, leaving net zero both halves. That is the textbook result for a market
-maker without private information, and it is useful precisely as that: volume at
-no cost.
-
-## Reproducing
+## Inicio rápido
 
 ```bash
-python -m venv .venv && .venv/bin/pip install -r requirements.txt
-cp .env.example .env        # then fill it in
-
-.venv/bin/python scripts/fetch_bitget_data.py --top 40 --interval 1h --days 360
-.venv/bin/python scripts/scan_edges.py --interval 1H          # finds 11 "winners"
-.venv/bin/python scripts/significance_check.py                # shows noise finds 13.6
-.venv/bin/python scripts/walkforward.py --interval 1H
-.venv/bin/python scripts/cross_sectional.py --majors
-.venv/bin/python -m strategies.mm_bitget.backtest --sweep
+git clone https://github.com/MarxMad/Bitget-Alg.git Bitget-Algoritmo-API
+cd Bitget-Algoritmo-API
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env                       # llena tus llaves demo
+python herramientas/check_conexion.py      # ¿funciona tu API key?
 ```
 
-## Running
+## Estructura
 
-Both strategies default to paper and say so in their logs.
-
-```bash
-.venv/bin/python scripts/preflight.py                          # what is blocking
-docker compose up --build -d                                   # market maker
-.venv/bin/python -m strategies.cross_sectional.strategy        # momentum
+```
+Bitget-Algoritmo-API/
+├── guias/              ← guías paso a paso para asistentes (empieza aquí)
+├── herramientas/       ← utilidades generales
+│   ├── check_conexion.py     revisa tu API key (solo lectura)
+│   ├── descargar_datos.py    baja velas históricas de Bitget a data/bitget/
+│   ├── scan_edges.py         prueba familias de estrategias en muchos activos
+│   ├── significance_check.py ¿el resultado se distingue del azar?
+│   └── walkforward.py        validación walk-forward (entrenar → probar)
+├── strategies/         ← una carpeta por estrategia (código + README + resultados)
+├── shared/             ← cliente de Bitget, configuración y motor de backtest
+├── deploy/             ← Docker, systemd y Vercel
+├── api/  dashboard.html  vercel.json   ← panel y cron en Vercel (cross-sectional)
+├── Dockerfile  docker-compose.yml      ← contenedor del market maker
+└── .env.example        ← plantilla de variables (copia a .env)
 ```
 
-`deploy/DOCKER.md` covers 24/7 hosting; `deploy/VERCEL.md` covers the momentum
-leg's cron and dashboard.
+`data/` y `.env` están en `.gitignore`: tus datos y tus llaves nunca se suben.
 
-## Things worth knowing before using this
+## Estrategias
 
-- **Fees are identical across all 787 contracts**: maker 0.020%, taker 0.060%.
-  No pair is cheaper, and no VIP tier on futures pays a maker rebate — the best
-  case is 0.000%.
-- **Volume scales with capital, not cleverness.** The sizing table in
-  `strategies/mm_bitget/README.md` gives the numbers. Below ~$30 of equity no
-  order size satisfies a 3% daily risk budget, and the bot declines to trade.
-- **Breakeven in expectation is not breakeven daily.** Daily sigma is $1.81 per
-  symbol per $10 of order size. On a small account the variance, not the edge,
-  decides the outcome.
-- **A Bitget account in Unified mode cannot use the v2 API at all** — every v2
-  private endpoint returns 40085 before credentials are even checked.
+| Estrategia | Estado | Carpeta |
+|---|---|---|
+| Cross-sectional momentum | ✅ Única que superó su prueba de azar | [`cross_sectional`](strategies/cross_sectional/) |
+| Market maker por volatilidad | 🟡 Breakeven: genera volumen sin perder | [`mm_bitget`](strategies/mm_bitget/) |
+| Trend-following (cruce de EMAs) | 🟡 Robusto en XLM, no en ETH | [`trend_following`](strategies/trend_following/) |
+| Momentum multi-timeframe | ❌ Sin ventaja robusta | [`momentum_mtf`](strategies/momentum_mtf/) |
+| Funding carry, pares ETH/BTC, breakout, reversión con régimen | 📝 Ideas sin implementar | [`strategies/`](strategies/) |
 
-## Security
+Detalle de cada una, con comandos y resultados: [guía 04](guias/04-estrategias.md).
 
-No credentials are in this repository, and `.gitignore` covers `.env`, `*.pem`
-and `*.key`. Give the API key Trade permission but **not** Wallet: a leaked key
-should be able to trade badly, never to withdraw.
+## Licencia
 
-## Status
-
-Research and infrastructure are complete and tested against the live API.
-Neither strategy has traded with real money. The honest next step is a forward
-test on data that did not exist when the backtests ran.
+MIT. Úsalo para aprender; si operas con dinero real, la responsabilidad es tuya.

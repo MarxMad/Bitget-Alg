@@ -25,7 +25,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from scripts.scan_edges import load
+from herramientas.scan_edges import load
 from strategies.mm_bitget.core import (
     MMConfig, realized_vol, quote_prices, sides_allowed, needs_reprice,
 )

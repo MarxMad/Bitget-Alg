@@ -24,8 +24,8 @@ import itertools
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from scripts.scan_edges import load
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from herramientas.scan_edges import load
 
 MAKER = 0.0002
 

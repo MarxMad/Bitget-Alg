@@ -5,14 +5,14 @@ requoting every 15s only when price has actually drifted.
 
 ## Why 2.5x, and why the old bot lost
 
-The predecessor bot quoted a fixed mid±0.02%. BTC's book is 0.0001% wide,
+The first version quoted a fixed mid±0.02% (replay it with `replay_fixed_spread.py`). BTC's book is 0.0001% wide,
 so those orders rest far outside the touch and only fill when price runs through
 them — buying dips, selling rips. That is mean reversion with negative
 expectancy, not spread capture, and it lost 0.025–0.049% of every dollar of
 volume it generated.
 
 Width has to scale with how much the asset actually moves. Measured over 56
-asset-days of Bitget 1m data (SOL, ETH, BTC, XLM), `scripts/optimize_mm.py`:
+asset-days of Bitget 1m data (SOL, ETH, BTC, XLM), `strategies/mm_bitget/optimize.py`:
 
 | Width | P&L/day | Days up | Volume/day | |
 |---|---|---|---|---|

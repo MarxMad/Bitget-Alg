@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from shared.bitget_client import BitgetClient, unwrap
+from shared.config import client_from_env
 from strategies.cross_sectional.core import (
     CrossSectionalConfig, trailing_return, rank_universe,
     target_weights, sizing_is_viable,
@@ -168,8 +169,10 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(message)s",
                         datefmt="%H:%M:%S")
     load_dotenv()
-    client = BitgetClient(os.getenv("BITGET_ACCESS_KEY"), os.getenv("BITGET_PASSPHRASE"),
-                          os.getenv("BITGET_PRIVATE_KEY_PATH"))
+    # Even paper mode reads account equity to size positions, so keys are required.
+    client = client_from_env()
+    if client.demo:
+        logging.info("Entorno DEMO de Bitget (paptrading): fondos simulados.")
     cfg = CrossSectionalConfig(k=args.k, lookback_hours=args.lookback,
                                hold_hours=args.hold, leverage=args.leverage,
                                paper=not args.live)

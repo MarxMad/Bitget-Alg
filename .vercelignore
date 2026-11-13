@@ -1,18 +1,14 @@
 # Research and backtesting never run on Vercel — keeping them out of the bundle
 # avoids shipping pandas, numpy and hundreds of MB of candle CSVs.
 data/
-scripts/
-strategies/market_maker/
-strategies/mean_reversion/
+herramientas/
 strategies/trend_following/
 strategies/momentum_mtf/
 strategies/funding_carry/
 strategies/pairs_eth_btc/
 strategies/regime_mean_reversion/
 strategies/volatility_breakout/
-education/
-docs/
+guias/
 deploy/
 .venv/
 *.csv
-bot.py

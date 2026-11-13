@@ -3,15 +3,16 @@
 Everything that must be true before the bot places a real order, checked
 against the live account rather than assumed.
 
-    .venv/bin/python scripts/preflight.py
+    .venv/bin/python strategies/mm_bitget/preflight.py
 """
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from dotenv import load_dotenv
-from shared.bitget_client import BitgetClient, unwrap
+from shared.bitget_client import unwrap
+from shared.config import auth_method, client_from_env, is_demo, missing_credentials
 from strategies.mm_bitget.core import MMConfig, size_from_equity
 
 load_dotenv()
@@ -32,29 +33,23 @@ def check(label, fn):
 def main():
     print("\n═══ PREFLIGHT ═══\n")
 
-    creds = {k: os.getenv(k) for k in
-             ("BITGET_ACCESS_KEY", "BITGET_PASSPHRASE")}
-    keypath = os.getenv("BITGET_PRIVATE_KEY_PATH")
-    keypem = os.getenv("BITGET_PRIVATE_KEY")
-
+    faltan = missing_credentials()
     check("credenciales en .env", lambda: (
-        (OK, "las tres presentes") if all(creds.values()) and (keypath or keypem)
-        else (FAIL, "falta " + ", ".join(k for k, v in creds.items() if not v) +
-              ("" if (keypath or keypem) else " BITGET_PRIVATE_KEY(_PATH)"))))
+        (OK, f"completas · firma {auth_method()}" + (" · DEMO" if is_demo() else ""))
+        if not faltan else (FAIL, "falta " + ", ".join(faltan))))
 
-    if not all(creds.values()) or not (keypath or keypem):
+    if faltan:
         print("\n  Sin credenciales no puedo seguir.\n")
         return 1
 
-    c = BitgetClient(creds["BITGET_ACCESS_KEY"], creds["BITGET_PASSPHRASE"],
-                     keypath or keypem)
+    c = client_from_env()
 
     check("API pública", lambda: (
-        (OK, f"XLM a {unwrap(BitgetClient().get_tickers('XLMUSDT'))[0]['lastPrice']}")))
+        (OK, f"XLM a {unwrap(client_from_env(public_only=True).get_tickers('XLMUSDT'))[0]['lastPrice']}")))
 
     def auth():
         r = c.get_positions()
-        return ((OK, "firma RSA válida") if r.get("code") == "00000"
+        return ((OK, f"firma {auth_method()} válida") if r.get("code") == "00000"
                 else (FAIL, f"{r.get('code')}: {r.get('msg')}"))
     check("autenticación", auth)
 

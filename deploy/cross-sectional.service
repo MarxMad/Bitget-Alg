@@ -6,9 +6,9 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=bot
-WorkingDirectory=/home/bot/Bitunix-Bot
-EnvironmentFile=/home/bot/Bitunix-Bot/.env
-ExecStart=/home/bot/Bitunix-Bot/.venv/bin/python -m strategies.cross_sectional.strategy
+WorkingDirectory=/home/bot/Bitget-Algoritmo-API
+EnvironmentFile=/home/bot/Bitget-Algoritmo-API/.env
+ExecStart=/home/bot/Bitget-Algoritmo-API/.venv/bin/python -m strategies.cross_sectional.strategy
 
 # Restart on crash, but give up if it crash-loops — a bot that cannot start
 # should stay down loudly rather than hammer the exchange and trip rate limits.
@@ -17,15 +17,15 @@ RestartSec=30
 StartLimitBurst=5
 StartLimitIntervalSec=600
 
-StandardOutput=append:/home/bot/Bitunix-Bot/logs/cross_sectional.log
-StandardError=append:/home/bot/Bitunix-Bot/logs/cross_sectional.log
+StandardOutput=append:/home/bot/Bitget-Algoritmo-API/logs/cross_sectional.log
+StandardError=append:/home/bot/Bitget-Algoritmo-API/logs/cross_sectional.log
 
 # The bot only needs its own directory and outbound HTTPS.
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/home/bot/Bitunix-Bot/logs
+ReadWritePaths=/home/bot/Bitget-Algoritmo-API/logs
 
 [Install]
 WantedBy=multi-user.target

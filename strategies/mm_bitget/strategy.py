@@ -35,6 +35,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from shared.bitget_client import BitgetClient, unwrap
+from shared.config import client_from_env
 from strategies.mm_bitget import status_server
 from strategies.mm_bitget.core import (
     MMConfig, realized_vol, quote_prices, sides_allowed, needs_reprice,
@@ -246,8 +247,10 @@ def main():
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
     load_dotenv()
-    client = BitgetClient(os.getenv("BITGET_ACCESS_KEY"), os.getenv("BITGET_PASSPHRASE"),
-                          os.getenv("BITGET_PRIVATE_KEY_PATH") or os.getenv("BITGET_PRIVATE_KEY"))
+    # Even paper mode reads account equity to size orders, so keys are required.
+    client = client_from_env()
+    if client.demo:
+        logging.info("Entorno DEMO de Bitget (paptrading): fondos simulados.")
     cfg = MMConfig(symbols=[s.strip().upper() for s in args.symbols.split(",")],
                    order_usdt=args.order_usdt, vol_multiple=args.vol_multiple,
                    paper=not args.live)

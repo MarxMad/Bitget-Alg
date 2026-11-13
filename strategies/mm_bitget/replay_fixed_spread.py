@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Replay the existing market-maker design against real Bitget 1m data.
+Replay a fixed-spread market maker against real Bitget 1m data.
 
-The predecessor bot (on a different exchange) quoted buy at mid*(1 - spread_pct/2) and sell at
+A fixed-spread MM quotes buy at mid*(1 - spread_pct/2) and sell at
 mid*(1 + spread_pct/2). With the default spread_pct=0.0004 that captures 0.04%
 per completed round trip — exactly the 0.02% maker fee paid on each of the two
 fills. The design is breakeven by construction, so whatever it actually earns is
 the mean-reversion edge of buying 0.02% dips and selling 0.02% rips, nothing
 else. This measures that edge.
 
-    .venv/bin/python scripts/simulate_mm.py --symbol XLMUSDT --spread 0.0004
+    python strategies/mm_bitget/replay_fixed_spread.py --symbol XLMUSDT --spread 0.0004
 """
 import argparse
 import os
@@ -17,8 +17,8 @@ import sys
 
 import pandas as pd
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from scripts.scan_edges import load
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from herramientas.scan_edges import load
 
 MAKER = 0.0002
 

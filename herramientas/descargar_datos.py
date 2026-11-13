@@ -2,8 +2,8 @@
 """
 Download Bitget USDT-M perpetual candles into CSVs for research.
 
-    .venv/bin/python scripts/fetch_bitget_data.py --top 30 --interval 1h --days 360
-    .venv/bin/python scripts/fetch_bitget_data.py --symbols XLMUSDT,SOLUSDT --interval 15m --days 180
+    .venv/bin/python herramientas/descargar_datos.py --top 30 --interval 1h --days 360
+    .venv/bin/python herramientas/descargar_datos.py --symbols XLMUSDT,SOLUSDT --interval 15m --days 180
 
 Writes data/bitget/<SYMBOL>_<interval>.csv with columns ts,open,high,low,close,volume,turnover.
 Public endpoints only — no credentials needed.

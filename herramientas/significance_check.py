@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from scripts.scan_edges import load, evaluate, FAMILIES, BUILDERS, FEES
+from herramientas.scan_edges import load, evaluate, FAMILIES, BUILDERS, FEES
 
 FEE  = FEES["maker"]
 BPY  = 8760
